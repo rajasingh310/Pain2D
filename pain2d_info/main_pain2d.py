@@ -7,6 +7,7 @@ from kivy.uix.widget import Widget
 from kivy.graphics import Color, Line, Rectangle
 from kivy.core.image import Image as CoreImage
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.gridlayout import GridLayout
 
 
 class PaintWidget(Widget):
@@ -74,13 +75,28 @@ class Pain2D_draw(Screen):
         self.add_widget(layout)
 
     def open_color_picker(self, instance):
-        color_picker = ColorPicker()
-        popup = Popup(title='Pick a Color', content=color_picker, size_hint=(0.8, 0.8))
-        color_picker.bind(color=self.on_color)
-        popup.open()
+        color_grid = BoxLayout(orientation="vertical", spacing=10, size_hint=(1, 1))
+        colors = [
+            (1, 0, 0, 1), (1, 0.2, 0, 1), (1, 0.3, 0, 1), (1, 0.4, 0, 1), (1, 0.5, 0, 1),
+            (1, 0.6, 0, 1), (1, 0.7, 0, 1), (1, 0.8, 0, 1), (1, 0.9, 0, 1), (1, 1, 0, 1)
+        ]
 
-    def on_color(self, instance, value):
-        self.paint_widget.color = value
+        i = 10
+        for color in colors:
+            btn = Button(text=f"Pain intensity value: {i}", background_color=color, font_size="8mm")
+            btn.bind(on_release=lambda btn: self.set_color(btn.background_color))
+            color_grid.add_widget(btn)
+            i -= 1
+
+        i = 1
+
+        popup = Popup(title='Pick a Color', content=color_grid, size_hint=(0.8, 0.8))
+        popup.open()
+        self.color_picker_popup = popup
+
+    def set_color(self, color):
+        self.paint_widget.color = color
+        self.color_picker_popup.dismiss()
 
     def clear_canvas(self, instance):
         self.paint_widget.clear_canvas()
