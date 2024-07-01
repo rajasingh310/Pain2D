@@ -52,6 +52,7 @@ class PaintWidget(Widget):
 class Pain2D_draw(Screen):
     def __init__(self, **kwargs):
         super(Pain2D_draw, self).__init__(**kwargs)
+
         layout = BoxLayout(orientation='vertical')
         self.paint_widget = PaintWidget()
         layout.add_widget(self.paint_widget)

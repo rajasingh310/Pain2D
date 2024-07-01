@@ -6,6 +6,7 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 
 from pain2d_info.main_pain2d import Pain2D_draw
+from patient_info.main_patient import PatientInfoScreen
 
 
 class MainScreen(Screen):
@@ -54,6 +55,7 @@ class NewCanvasScreen(Screen):
         btn5 = Button(text="Back", font_size="12mm", color=(1, 1, 1, 1))
 
         btn4.bind(on_press=self.run_pain2d)
+        btn1.bind(on_press=self.run_patient_info)
 
         layout.add_widget(btn1)
         layout.add_widget(btn2)
@@ -69,6 +71,9 @@ class NewCanvasScreen(Screen):
     def run_pain2d(self, instance):
         self.manager.current = 'pain2d'
 
+    def run_patient_info(self, instance):
+        self.manager.current = 'patient_info'
+
 
 class Pain2D(App):
     def build(self):
@@ -76,6 +81,7 @@ class Pain2D(App):
         sm.add_widget(MainScreen(name='main'))
         sm.add_widget(NewCanvasScreen(name='new_canvas'))
         sm.add_widget(Pain2D_draw(name='pain2d'))
+        sm.add_widget(PatientInfoScreen(name='patient_info'))
         return sm
 
 
