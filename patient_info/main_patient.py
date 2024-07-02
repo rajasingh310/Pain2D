@@ -4,9 +4,10 @@ from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager, Screen
+
+
 class PatientInfo(GridLayout):
 
     def __init__(self, **kwargs):

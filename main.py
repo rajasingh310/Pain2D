@@ -7,6 +7,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 
 from pain2d_info.main_pain2d import Pain2D_draw
 from patient_info.main_patient import PatientInfoScreen
+from questionaire_info.main_questionaire import QuestionaireInfoScreen
 
 
 class MainScreen(Screen):
@@ -30,7 +31,7 @@ class MainScreen(Screen):
 
         self.add_widget(layout)
 
-    def update_rect(self, *args):
+    def update_rect(self):
         self.rect.size = Window.size
 
     def on_new_pressed(self, instance):
@@ -54,8 +55,10 @@ class NewCanvasScreen(Screen):
         btn4 = Button(text="Pain2D Info", font_size="12mm", color=(1, 1, 1, 1))
         btn5 = Button(text="Back", font_size="12mm", color=(1, 1, 1, 1))
 
-        btn4.bind(on_press=self.run_pain2d)
+
         btn1.bind(on_press=self.run_patient_info)
+        btn2.bind(on_press=self.run_questionaire_info)
+        btn4.bind(on_press=self.run_pain2d)
 
         layout.add_widget(btn1)
         layout.add_widget(btn2)
@@ -74,6 +77,9 @@ class NewCanvasScreen(Screen):
     def run_patient_info(self, instance):
         self.manager.current = 'patient_info'
 
+    def run_questionaire_info(self, instance):
+        self.manager.current = 'questionaire_info'
+
 
 class Pain2D(App):
     def build(self):
@@ -82,6 +88,7 @@ class Pain2D(App):
         sm.add_widget(NewCanvasScreen(name='new_canvas'))
         sm.add_widget(Pain2D_draw(name='pain2d'))
         sm.add_widget(PatientInfoScreen(name='patient_info'))
+        sm.add_widget(QuestionaireInfoScreen(name='questionaire_info'))
         return sm
 
 
