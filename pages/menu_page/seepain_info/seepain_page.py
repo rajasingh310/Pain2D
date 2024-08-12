@@ -3,17 +3,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from ...base_page.base_page import BasePage
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Line, Rectangle
 from kivy.core.image import Image as CoreImage
-from kivy.graphics.texture import Texture
-from kivy.uix.textinput import TextInput
-from kivy.utils import platform
-
-from ...base_page.base_page import BasePage
-
-import os
 
 
 class SeePainPage(BasePage):
@@ -47,7 +41,6 @@ class SeePainPage(BasePage):
         bottom_nested_layout = GridLayout(cols=1, rows=2)
 
         btn_submit = Button(text="Submit", background_color=(0, 1, 0, 1))
-        btn_submit.bind(on_release=self.save_drawing)
         btn_back = Button(text="Back", background_color=(1, 0, 0, 1))
 
         btn_back.bind(on_press=self.go_back)
@@ -102,83 +95,6 @@ class SeePainPage(BasePage):
     def go_back(self, instance):
         self.manager.current = 'menu_page'
 
-    def save_drawing(self, instance):
-        # Open a popup to ask for a file name
-        layout = BoxLayout(orientation='vertical', padding=10)
-        layout.add_widget(Label(text="Enter file name:"))
-
-        self.filename_input = TextInput(multiline=False, hint_text="filename")
-        layout.add_widget(self.filename_input)
-
-        btn_layout = BoxLayout(orientation='horizontal')
-        btn_ok = Button(text="OK", on_release=self.save_image_with_name)
-        btn_cancel = Button(text="Cancel", on_release=self.dismiss_popup)
-        btn_layout.add_widget(btn_ok)
-        btn_layout.add_widget(btn_cancel)
-
-        layout.add_widget(btn_layout)
-
-        self.popup = Popup(title="Save Image", content=layout, size_hint=(0.8, 0.4))
-        self.popup.open()
-
-    def dismiss_popup(self, instance):
-        self.popup.dismiss()
-
-    def save_image_with_name(self, instance):
-        file_name = self.filename_input.text.strip()
-        if not file_name:
-            # Handle empty filename case
-            return
-
-        # Define directory path
-        directory = os.path.join(App.get_running_app().user_data_dir, 'Drawings')
-        if platform == 'android':
-            from android.storage import primary_external_storage_path
-            directory = os.path.join(primary_external_storage_path(), 'Drawings')
-
-        # Create the directory if it does not exist
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        file_path = os.path.join(directory, f"{file_name}.png")
-
-        # Check if file exists
-        if os.path.exists(file_path):
-            # Prompt for overwrite or new name
-            layout = BoxLayout(orientation='vertical', padding=10)
-            layout.add_widget(Label(text=f"File '{file_name}.png' already exists. Do you want to replace it?"))
-
-            btn_layout = BoxLayout(orientation='horizontal')
-            btn_replace = Button(text="Replace", on_release=lambda x: self.save_image(file_path, overwrite=True))
-            btn_new_name = Button(text="New Name", on_release=self.save_drawing)
-            btn_layout.add_widget(btn_replace)
-            btn_layout.add_widget(btn_new_name)
-
-            layout.add_widget(btn_layout)
-
-            self.popup.dismiss()
-            self.popup = Popup(title="File Exists", content=layout, size_hint=(0.8, 0.4))
-            self.popup.open()
-        else:
-            self.save_image(file_path)
-
-    def save_image(self, file_path, overwrite=False):
-        # Save the current canvas as a PNG file
-        self.paint_widget.export_to_png(file_path)
-
-        if not overwrite:
-            self.popup.dismiss()
-
-        # Notify the user that the image has been saved
-        layout = BoxLayout(orientation='vertical', padding=10)
-        layout.add_widget(Label(text=f"Image saved as '{os.path.basename(file_path)}'"))
-
-        btn_ok = Button(text="OK", on_release=self.dismiss_popup)
-        layout.add_widget(btn_ok)
-
-        self.popup = Popup(title="Saved", content=layout, size_hint=(0.8, 0.3))
-        self.popup.open()
-
 
 class PaintWidget(Widget):
     def __init__(self, **kwargs):
@@ -215,4 +131,3 @@ class PaintWidget(Widget):
         self.canvas.clear()
         with self.canvas:
             self.rect = Rectangle(texture=self.bg, pos=self.pos, size=self.size)
-

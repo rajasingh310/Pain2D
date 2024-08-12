@@ -13,7 +13,7 @@ class LaboratoryPage(BasePage):
 
         top_nested_layout = BoxLayout(orientation="vertical")
 
-        label = Label(text="Update coming soon!", color=(0, 0, 0, 1))
+        label = Label(text="To be implemented soon!", color=(0, 0, 0, 1))
         top_nested_layout.add_widget(label)
 
         bottom_nested_layout = BoxLayout(orientation="vertical")
