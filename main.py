@@ -11,6 +11,7 @@ from pages.menu_page.seepain_info.seepain_page import SeePainPage
 
 class MyApp(App):
     def build(self):
+        self.title = 'SeePain'  # Set the title here
         sm = ScreenManager()
         sm.add_widget(FirstPage(name='first_page'))
         sm.add_widget(MenuPage(name='menu_page'))
