@@ -1,13 +1,138 @@
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from ...base_page.base_page import BasePage
-from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Line, Rectangle
 from kivy.core.image import Image as CoreImage
+from kivy.uix.slider import Slider
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from ...base_page.base_page import BasePage  # Make sure your BasePage is correctly referenced
+
+
+class PaintWidget(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.color = (1, 0, 0, 1)  # Default drawing color: red
+        self.line_width = 2
+        self.zoom_scale = 1.0
+        self.is_moving = False  # Flag to track whether we are in move mode
+        self.move_enabled = False  # To toggle between move and draw mode
+        self.last_touch_pos = None  # To track the last position for moving
+
+        # To store lines and their original points for transformation
+        self.lines = []
+
+        # Load the image
+        self.bg_image = CoreImage('pages/menu_page/seepain_info/human_sketch_2.png').texture
+        self.img_aspect_ratio = self.bg_image.width / self.bg_image.height  # Aspect ratio of the image
+
+        with self.canvas:
+            self.rect = Rectangle(texture=self.bg_image, pos=self.pos, size=self.size)
+
+        self.bind(size=self.update_rect, pos=self.update_rect)
+
+    def update_rect(self, *args):
+        # Calculate the aspect ratio of the widget
+        widget_aspect_ratio = self.width / self.height
+
+        # If the widget is wider than the image's aspect ratio, scale based on height
+        if widget_aspect_ratio > self.img_aspect_ratio:
+            new_height = self.height * self.zoom_scale
+            new_width = new_height * self.img_aspect_ratio
+        else:
+            # Otherwise, scale based on width
+            new_width = self.width * self.zoom_scale
+            new_height = new_width / self.img_aspect_ratio
+
+        # Center the image in the widget
+        self.rect.size = (new_width, new_height)
+        self.rect.pos = (
+            self.center_x - new_width / 2,
+            self.center_y - new_height / 2
+        )
+
+        # Update the lines to match the new image position and scale
+        self.update_lines()
+
+    def update_lines(self):
+        """Updates the lines according to the current zoom scale and position of the image."""
+        for line_data in self.lines:
+            original_points = line_data['original_points']
+            scaled_points = []
+            for i in range(0, len(original_points), 2):
+                # Apply zoom and translation to the points
+                x = self.rect.pos[0] + (original_points[i] * self.rect.size[0])
+                y = self.rect.pos[1] + (original_points[i + 1] * self.rect.size[1])
+                scaled_points.extend([x, y])
+
+            # Update the points of the line
+            line_data['line'].points = scaled_points
+
+    def on_touch_down(self, touch):
+        if self.move_enabled:
+            # Start moving the image
+            self.last_touch_pos = touch.pos
+            self.is_moving = True
+            return True
+        else:
+            # Drawing mode
+            if self.collide_point(*touch.pos):
+                with self.canvas:
+                    Color(*self.color)
+                    # Normalize the touch positions relative to the image
+                    normalized_x = (touch.x - self.rect.pos[0]) / self.rect.size[0]
+                    normalized_y = (touch.y - self.rect.pos[1]) / self.rect.size[1]
+                    touch.ud['line'] = Line(points=(touch.x, touch.y), width=self.line_width)
+                    # Store original normalized points
+                    self.lines.append({
+                        'line': touch.ud['line'],
+                        'original_points': [normalized_x, normalized_y]
+                    })
+                return True
+        return super().on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        if self.move_enabled and self.is_moving:
+            # Move the image
+            if self.last_touch_pos:
+                dx = touch.x - self.last_touch_pos[0]
+                dy = touch.y - self.last_touch_pos[1]
+                self.rect.pos = (self.rect.pos[0] + dx, self.rect.pos[1] + dy)
+                self.last_touch_pos = touch.pos
+                self.update_lines()
+            return True
+        elif 'line' in touch.ud:
+            # Drawing mode
+            touch.ud['line'].points += [touch.x, touch.y]
+            # Normalize the points as they are being drawn
+            normalized_x = (touch.x - self.rect.pos[0]) / self.rect.size[0]
+            normalized_y = (touch.y - self.rect.pos[1]) / self.rect.size[1]
+            self.lines[-1]['original_points'].extend([normalized_x, normalized_y])
+            return True
+        return super().on_touch_move(touch)
+
+    def on_touch_up(self, touch):
+        # Reset the move flag when the touch is released
+        if self.is_moving:
+            self.is_moving = False
+            self.last_touch_pos = None
+        return super().on_touch_up(touch)
+
+    def clear_canvas(self):
+        self.canvas.clear()
+        with self.canvas:
+            self.rect = Rectangle(texture=self.bg_image, pos=self.rect.pos, size=self.rect.size)
+        self.lines.clear()
+
+    def set_zoom(self, value):
+        """Method to be linked with the zoom slider to update zoom level"""
+        self.zoom_scale = value
+        self.update_rect()
+
+    def toggle_move_mode(self):
+        """Method to toggle between move and draw modes"""
+        self.move_enabled = not self.move_enabled
 
 
 class SeePainPage(BasePage):
@@ -17,21 +142,32 @@ class SeePainPage(BasePage):
         main_layout = BoxLayout(orientation="vertical")
 
         # Top nested layout
-        top_nested_layout = BoxLayout(orientation="vertical")
+        top_nested_layout = BoxLayout(orientation="horizontal")
 
+        # Left side slider for zoom
+        self.zoom_slider = Slider(min=0.5, max=3, value=1, orientation='vertical', size_hint=(0.1, 1))
+        self.zoom_slider.bind(value=lambda instance, value: self.paint_widget.set_zoom(value))
+        top_nested_layout.add_widget(self.zoom_slider)
+
+        # The drawing widget
         self.paint_widget = PaintWidget()
         top_nested_layout.add_widget(self.paint_widget)
 
-        # middle nested layout
+        # Middle nested layout
         middle_nested_layout = BoxLayout(orientation="horizontal")
 
-        color_picker_button = Button(text='Choose Color')
+        color_picker_button = Button(text='Pain Indicator')
         color_picker_button.bind(on_release=self.open_color_picker)
         middle_nested_layout.add_widget(color_picker_button)
 
         clear_button = Button(text='Clear')
         clear_button.bind(on_release=self.clear_canvas)
         middle_nested_layout.add_widget(clear_button)
+
+        # Extra Button for toggling move/draw mode
+        self.toggle_move_button = Button(text="Toggle Move/Draw", background_color=(1, 1, 1, 1))
+        self.toggle_move_button.bind(on_release=self.toggle_move_mode)
+        middle_nested_layout.add_widget(self.toggle_move_button)
 
         help_btn = Button(text="Help")
         help_btn.bind(on_press=self.show_help)
@@ -69,7 +205,7 @@ class SeePainPage(BasePage):
 
         i = 10
         for color in colors:
-            btn = Button(text=f"Pain intensity value: {i}", background_color=color, font_size="8mm")
+            btn = Button(text=f"Pain intensity value: {i}", background_color=color)
             btn.bind(on_release=lambda btn: self.set_color(btn.background_color))
             color_grid.add_widget(btn)
             i -= 1
@@ -95,39 +231,10 @@ class SeePainPage(BasePage):
     def go_back(self, instance):
         self.manager.current = 'menu_page'
 
-
-class PaintWidget(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.color = (1, 0, 0, 1)  # Default to red
-        self.line_width = 2
-
-        # Load the image
-        with self.canvas:
-            self.bg = CoreImage('pages/menu_page/seepain_info/human_sketch_2.png').texture
-            self.rect = Rectangle(texture=self.bg, pos=self.pos, size=self.size)
-
-        self.bind(size=self.update_rect, pos=self.update_rect)
-
-    def update_rect(self, *args):
-        self.rect.pos = self.pos
-        self.rect.size = self.size
-
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            with self.canvas:
-                Color(*self.color)
-                touch.ud['line'] = Line(points=(touch.x, touch.y), width=self.line_width)
-            return True
-        return super().on_touch_down(touch)
-
-    def on_touch_move(self, touch):
-        if 'line' in touch.ud:
-            touch.ud['line'].points += [touch.x, touch.y]
-            return True
-        return super().on_touch_move(touch)
-
-    def clear_canvas(self):
-        self.canvas.clear()
-        with self.canvas:
-            self.rect = Rectangle(texture=self.bg, pos=self.pos, size=self.size)
+    def toggle_move_mode(self, instance):
+        """Toggle move/draw mode and change the button color"""
+        self.paint_widget.toggle_move_mode()
+        if self.paint_widget.move_enabled:
+            self.toggle_move_button.background_color = (0, 0, 1, 1)  # Green for move mode
+        else:
+            self.toggle_move_button.background_color = (1, 1, 1, 1)  # Default color for draw mode

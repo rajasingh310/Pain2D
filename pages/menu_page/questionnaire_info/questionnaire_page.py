@@ -54,16 +54,16 @@ class QuestionnairePage(BasePage):
         self.manager.current = 'menu_page'
 
     def show_options(self, title, options, task_name):
-        spinner = Spinner(text='Select an option', values=options, size_hint=(1, 0.5), font_size="8mm")
+        spinner = Spinner(text='Select an option', values=options, size_hint=(1, 0.5))
         spinner.bind(text=lambda spinner, text: self.on_spinner_select(text, task_name))
 
         popup_layout = BoxLayout(orientation='vertical')
-        popup_layout.add_widget(Label(text=title, font_size="8mm"))
+        popup_layout.add_widget(Label(text=title))
         popup_layout.add_widget(spinner)
 
         # Adding Back Button to the Popup
         popup_layout.add_widget(
-            Button(text='Back', size_hint=(1, 0.5), font_size="8mm", on_press=lambda btn: popup.dismiss()))
+            Button(text='Back', size_hint=(1, 0.5), on_press=lambda btn: popup.dismiss()))
 
         popup = Popup(title=title, content=popup_layout, size_hint=(0.8, 0.5))
         popup.open()
@@ -224,14 +224,14 @@ class QuestionnairePage(BasePage):
 
     def show_subquestions(self, title, sub_questions):
         popup_layout = BoxLayout(orientation='vertical')
-        popup_layout.add_widget(Label(text=title, font_size="8mm"))
+        popup_layout.add_widget(Label(text=title))
         for sub_question, func in sub_questions:
-            btn = Button(text=sub_question, on_press=func, size_hint=(1, 0.5), font_size="8mm")
+            btn = Button(text=sub_question, on_press=func, size_hint=(1, 0.5))
             popup_layout.add_widget(btn)
 
         # Adding Back Button to the Subquestions Popup
         popup_layout.add_widget(
-            Button(text='Back', size_hint=(1, 0.5), font_size="8mm", on_press=lambda btn: popup.dismiss()))
+            Button(text='Back', size_hint=(1, 0.5), on_press=lambda btn: popup.dismiss()))
 
         popup = Popup(title=title, content=popup_layout, size_hint=(0.8, 0.8))
         popup.open()
