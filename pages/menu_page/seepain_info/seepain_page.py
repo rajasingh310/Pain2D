@@ -22,6 +22,8 @@ class PaintWidget(Widget):
 
         # To store lines and their original points for transformation
         self.lines = []
+        self.undo_stack = []  # Stack to store removed lines for undo
+        self.redo_stack = []  # Stack to store undone lines for redo
 
         # Load the image
         self.bg_image = CoreImage('pages/menu_page/seepain_info/human_sketch_2.png').texture
@@ -89,6 +91,8 @@ class PaintWidget(Widget):
                         'line': touch.ud['line'],
                         'original_points': [normalized_x, normalized_y]
                     })
+                # Clear the redo stack when drawing a new line
+                self.redo_stack.clear()
                 return True
         return super().on_touch_down(touch)
 
@@ -124,6 +128,8 @@ class PaintWidget(Widget):
         with self.canvas:
             self.rect = Rectangle(texture=self.bg_image, pos=self.rect.pos, size=self.rect.size)
         self.lines.clear()
+        self.undo_stack.clear()
+        self.redo_stack.clear()
 
     def set_zoom(self, value):
         """Method to be linked with the zoom slider to update zoom level"""
@@ -133,6 +139,20 @@ class PaintWidget(Widget):
     def toggle_move_mode(self):
         """Method to toggle between move and draw modes"""
         self.move_enabled = not self.move_enabled
+
+    def undo(self):
+        if self.lines:
+            last_line = self.lines.pop()
+            self.undo_stack.append(last_line)
+            self.canvas.remove(last_line['line'])
+
+    def redo(self):
+        if self.undo_stack:
+            last_undone_line = self.undo_stack.pop()
+            self.lines.append(last_undone_line)
+            with self.canvas:
+                Color(*self.color)
+                self.canvas.add(last_undone_line['line'])
 
 
 class SeePainPage(BasePage):
@@ -163,6 +183,14 @@ class SeePainPage(BasePage):
         clear_button = Button(text='Clear')
         clear_button.bind(on_release=self.clear_canvas)
         middle_nested_layout.add_widget(clear_button)
+
+        undo_button = Button(text="Undo")
+        undo_button.bind(on_release=lambda instance: self.paint_widget.undo())
+        middle_nested_layout.add_widget(undo_button)
+
+        redo_button = Button(text="Redo")
+        redo_button.bind(on_release=lambda instance: self.paint_widget.redo())
+        middle_nested_layout.add_widget(redo_button)
 
         # Extra Button for toggling move/draw mode
         self.toggle_move_button = Button(text="Toggle Move/Draw", background_color=(1, 1, 1, 1))
