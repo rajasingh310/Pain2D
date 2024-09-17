@@ -210,8 +210,8 @@ class SeePainPage(BasePage):
         middle12_nested_layout.add_widget(self.zoom_slider)
         middle13_nested_layout.add_widget(self.zoom_value_label)
 
-        middle11_nested_layout.size_hint = (0.1, 1)
-        middle12_nested_layout.size_hint = (0.9, 1)
+        middle11_nested_layout.size_hint = (0.15, 1)
+        middle12_nested_layout.size_hint = (0.85, 1)
         middle13_nested_layout.size_hint = (0.05, 1)
 
         middle1_nested_layout.add_widget(middle11_nested_layout)
@@ -237,12 +237,12 @@ class SeePainPage(BasePage):
         middle22_nested_layout = BoxLayout(orientation="horizontal")
         middle23_nested_layout = BoxLayout(orientation="horizontal")
 
-        middle21_nested_layout.add_widget(Label(text="Pain level", color=(0, 0, 0, 1)))
+        middle21_nested_layout.add_widget(Label(text="Schmerzniveau", color=(0, 0, 0, 1)))
         middle22_nested_layout.add_widget(self.pain_slider)
         middle23_nested_layout.add_widget(self.pain_value_label)
 
-        middle21_nested_layout.size_hint = (0.1, 1)
-        middle22_nested_layout.size_hint = (0.9, 1)
+        middle21_nested_layout.size_hint = (0.15, 1)
+        middle22_nested_layout.size_hint = (0.85, 1)
         middle23_nested_layout.size_hint = (0.05, 1)
 
         middle2_nested_layout.add_widget(middle21_nested_layout)
@@ -252,11 +252,11 @@ class SeePainPage(BasePage):
         # Middle nested layout
         middle_nested_layout = BoxLayout(orientation="horizontal")
 
-        pencil_button = Button(text='Pencil')
+        pencil_button = Button(text='Bleistift')
         pencil_button.bind(on_press=self.show_pencil_popup)  # Bind the Pencil button to open the popup
         middle_nested_layout.add_widget(pencil_button)
 
-        clear_button = Button(text='Clear')
+        clear_button = Button(text='Löschen')
         clear_button.bind(on_release=self.clear_canvas)
         middle_nested_layout.add_widget(clear_button)
 
@@ -269,21 +269,21 @@ class SeePainPage(BasePage):
         middle_nested_layout.add_widget(redo_button)
 
         # Extra Button for toggling move/draw mode
-        self.toggle_move_button = Button(text="Move/Draw", background_color=(1, 1, 1, 1))
+        self.toggle_move_button = Button(text="Bewegen/Ziehen", background_color=(1, 1, 1, 1))
         self.toggle_move_button.bind(on_release=self.toggle_move_mode)
 
         middle_nested_layout.add_widget(self.toggle_move_button)
 
-        help_btn = Button(text="Help")
+        help_btn = Button(text="Helfen")
         help_btn.bind(on_press=self.show_help)
         middle_nested_layout.add_widget(help_btn)
 
         # Bottom nested layout with 1 column and 2 rows
         bottom_nested_layout = GridLayout(cols=1, rows=2)
 
-        btn_submit = Button(text="Submit", background_color=(0, 1, 0, 1))
+        btn_submit = Button(text="Einreichen", background_color=(0, 1, 0, 1))
         btn_submit.bind(on_press=self.show_save_popup)
-        btn_back = Button(text="Back", background_color=(1, 0, 0, 1))
+        btn_back = Button(text="Zurück", background_color=(1, 0, 0, 1))
 
         btn_back.bind(on_press=self.go_back)
 
@@ -354,9 +354,9 @@ class SeePainPage(BasePage):
 
     def show_help(self, instance):
         popup_layout = BoxLayout(orientation='vertical')
-        popup_layout.add_widget(Label(text="Abbreviations:\n \nB: Back \nF: Front \nH: Head \nL: Left \nR: Right \nM: Mouth "))
+        popup_layout.add_widget(Label(text="Abkürzungen:\n \nB: Rücken \nF: Vorderseite \nH: Kopf \nL: Links \nR: Rechts \nM: Mund "))
 
-        popup = Popup(title="Help", content=popup_layout, size_hint=(1.2, 0.8))
+        popup = Popup(title="Helfen", content=popup_layout, size_hint=(0.5, 0.5))
         popup.open()
 
     def go_back(self, instance):
@@ -413,14 +413,14 @@ class SeePainPage(BasePage):
         content = BoxLayout(orientation='vertical', spacing=10)
 
         thickness_slider = Slider(min=1, max=10, value=self.paint_widget.line_width, orientation='horizontal')
-        thickness_label = Label(text=f'Thickness: {int(thickness_slider.value)}')
+        thickness_label = Label(text=f'Dicke: {int(thickness_slider.value)}')
 
         # Bind the slider's value to update the label in real-time
         thickness_slider.bind(
-            value=lambda s, v: thickness_label.setter('text')(thickness_label, f'Thickness: {int(v)}'))
+            value=lambda s, v: thickness_label.setter('text')(thickness_label, f'Dicke: {int(v)}'))
 
         # Save button to apply the chosen thickness
-        save_button = Button(text='Apply', size_hint_y=None, height=50)
+        save_button = Button(text='Anwenden', size_hint_y=None, height=50)
         save_button.bind(on_press=lambda x: self.apply_pencil_thickness(thickness_slider.value))
 
         # Add the slider and label to the popup content
@@ -429,7 +429,7 @@ class SeePainPage(BasePage):
         content.add_widget(save_button)
 
         # Create and open the popup
-        self.pencil_popup = Popup(title='Pencil Thickness', content=content, size_hint=(0.8, 0.4))
+        self.pencil_popup = Popup(title='Bleistiftdicke', content=content, size_hint=(0.8, 0.4))
         self.pencil_popup.open()
 
     def apply_pencil_thickness(self, thickness):

@@ -46,7 +46,7 @@ class FirstPage(BasePage):
         layout.add_widget(label_description)
 
         # Add the ENTER button, occupying bottom 20% of the screen
-        btn_new = Button(text="ENTER", size_hint_y=0.15)
+        btn_new = Button(text="Eingeben", size_hint_y=0.15)
         btn_new.bind(on_press=self.go_to_menu_page)
 
         layout.add_widget(btn_new)
