@@ -7,7 +7,21 @@ from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
-from ...base_page.base_page import BasePage  # Make sure your BasePage is correctly referenced
+from kivy.graphics.texture import Texture
+from kivy.core.window import Window
+from kivy.graphics import Fbo, ClearColor, ClearBuffers
+from ...base_page.base_page import BasePage  # Ensure BasePage is correctly referenced
+import os
+from kivy.uix.textinput import TextInput
+
+# Check if we are running on Android
+try:
+    from android.permissions import request_permissions, Permission
+    from android.storage import primary_external_storage_path
+    android_imported = True
+except ImportError:
+    android_imported = False
+    print("Running on non-Android platform, android-specific features won't work.")
 
 
 class PaintWidget(Widget):
@@ -154,6 +168,9 @@ class PaintWidget(Widget):
                 Color(*self.color)
                 self.canvas.add(last_undone_line['line'])
 
+    def save_canvas(self, file_path):
+        self.export_to_png(file_path)
+
 
 class SeePainPage(BasePage):
     def __init__(self, **kwargs):
@@ -193,8 +210,9 @@ class SeePainPage(BasePage):
         middle_nested_layout.add_widget(redo_button)
 
         # Extra Button for toggling move/draw mode
-        self.toggle_move_button = Button(text="Toggle Move/Draw", background_color=(1, 1, 1, 1))
+        self.toggle_move_button = Button(text="Move/Draw", background_color=(1, 1, 1, 1))
         self.toggle_move_button.bind(on_release=self.toggle_move_mode)
+
         middle_nested_layout.add_widget(self.toggle_move_button)
 
         help_btn = Button(text="Help")
@@ -205,6 +223,7 @@ class SeePainPage(BasePage):
         bottom_nested_layout = GridLayout(cols=1, rows=2)
 
         btn_submit = Button(text="Submit", background_color=(0, 1, 0, 1))
+        btn_submit.bind(on_press=self.show_save_popup)
         btn_back = Button(text="Back", background_color=(1, 0, 0, 1))
 
         btn_back.bind(on_press=self.go_back)
@@ -223,6 +242,10 @@ class SeePainPage(BasePage):
         main_layout.add_widget(bottom_nested_layout)
 
         self.add_widget(main_layout)
+
+        # Request permissions if on Android
+        if android_imported:
+            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
     def open_color_picker(self, instance):
         color_grid = BoxLayout(orientation="vertical", spacing=10, size_hint=(1, 1))
@@ -251,9 +274,9 @@ class SeePainPage(BasePage):
 
     def show_help(self, instance):
         popup_layout = BoxLayout(orientation='vertical')
-        popup_layout.add_widget(Label(text="B: Back \nF: Front \nH: Head \nL: Left \nR: Right \nM:Mouth"))
+        popup_layout.add_widget(Label(text="Abbreviations:\n \nB: Back \nF: Front \nH: Head \nL: Left \nR: Right \nM: Mouth \n \n Stps to draw:\n \n1. Select the pain intensity by clicking the Pain Indicator button and choosing a level from 1 (mild) to 10 (severe).\n2. Each pain level corresponds to a color, from yellow (mild pain) to red (severe pain).\n3. Use your finger or mouse to draw on the human body image to mark the pain area.\n4. Use the Undo or Redo buttons to modify your drawing, or press Clear to erase everything. \n5. Once you're done, press the Submit button to save your drawing as a PNG file."))
 
-        popup = Popup(title="Help", content=popup_layout, size_hint=(0.8, 0.5))
+        popup = Popup(title="Help", content=popup_layout, size_hint=(1.2, 0.8))
         popup.open()
 
     def go_back(self, instance):
@@ -263,6 +286,41 @@ class SeePainPage(BasePage):
         """Toggle move/draw mode and change the button color"""
         self.paint_widget.toggle_move_mode()
         if self.paint_widget.move_enabled:
-            self.toggle_move_button.background_color = (0, 0, 1, 1)  # Green for move mode
+            self.toggle_move_button.background_color = (0, 0, 1, 1)  # Blue for move mode
         else:
-            self.toggle_move_button.background_color = (1, 1, 1, 1)  # Default color for draw mode
+            self.toggle_move_button.background_color = (1, 1, 1, 1)  # White for draw mode
+
+    def show_save_popup(self, instance):
+        content = BoxLayout(orientation='vertical', spacing=10)
+
+        self.file_name_input = TextInput(hint_text='Enter file name')
+        content.add_widget(self.file_name_input)
+
+        save_button = Button(text='Save', size_hint_y=None, height=50)
+        save_button.bind(on_press=self.save_canvas_with_name)
+        content.add_widget(save_button)
+
+        self.save_popup = Popup(title='Save Image', content=content, size_hint=(0.8, 0.4))
+        self.save_popup.open()
+
+    def save_canvas_with_name(self, instance):
+        file_name = self.file_name_input.text.strip()
+        if file_name:
+            if android_imported:
+                # Save to Android's primary external storage directory
+                storage_path = primary_external_storage_path()
+                save_path = os.path.join(storage_path, 'Download', f'{file_name}.png')
+            else:
+                # Save to the current working directory for testing on PC
+                save_path = os.path.join(os.getcwd(), f'{file_name}.png')
+
+            try:
+                self.paint_widget.save_canvas(save_path)
+                print(f"Image saved successfully at: {save_path}")
+
+                # Close the popup
+                self.save_popup.dismiss()
+            except Exception as e:
+                print(f"Error saving image: {str(e)}")
+        else:
+            print("No file name provided.")
