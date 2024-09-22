@@ -52,6 +52,8 @@ android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
 # (str) Icon of the application
 #icon.filename = %(source.dir)s/data/icon.png
 
+icon.filename = seepain_logo.png
+
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
 orientation = portrait

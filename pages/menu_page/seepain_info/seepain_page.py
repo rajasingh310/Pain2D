@@ -249,12 +249,39 @@ class SeePainPage(BasePage):
         middle2_nested_layout.add_widget(middle23_nested_layout)
         middle2_nested_layout.add_widget(middle22_nested_layout)
 
+        # slider for pain level
+        self.pencil_slider = Slider(min=1, max=10, value=2, orientation='horizontal', value_track=True,
+                                  value_track_color=[0.8, 0.8, 0.8, 1])
+
+        self.pencil_value_label = Label(text=str(int(self.pencil_slider.value)), color=(0, 0, 0, 1))
+
+        # Bind the slider's value to both update the label and set the drawing color
+        self.pencil_slider.bind(value=lambda instance, value: (
+            self.pencil_value_label.setter('text')(self.pencil_value_label, str(int(value))),
+            self.set_pencil_thickness(value)
+        ))
+
+        # Middle3 nested layout
+        middle3_nested_layout = BoxLayout(orientation="horizontal")
+
+        middle31_nested_layout = BoxLayout(orientation="horizontal")
+        middle32_nested_layout = BoxLayout(orientation="horizontal")
+        middle33_nested_layout = BoxLayout(orientation="horizontal")
+
+        middle31_nested_layout.add_widget(Label(text="Bleistiftdicke", color=(0, 0, 0, 1)))
+        middle32_nested_layout.add_widget(self.pencil_slider)
+        middle33_nested_layout.add_widget(self.pencil_value_label)
+
+        middle31_nested_layout.size_hint = (0.15, 1)
+        middle32_nested_layout.size_hint = (0.85, 1)
+        middle33_nested_layout.size_hint = (0.05, 1)
+
+        middle3_nested_layout.add_widget(middle31_nested_layout)
+        middle3_nested_layout.add_widget(middle33_nested_layout)
+        middle3_nested_layout.add_widget(middle32_nested_layout)
+
         # Middle nested layout
         middle_nested_layout = BoxLayout(orientation="horizontal")
-
-        pencil_button = Button(text='Bleistift')
-        pencil_button.bind(on_press=self.show_pencil_popup)  # Bind the Pencil button to open the popup
-        middle_nested_layout.add_widget(pencil_button)
 
         clear_button = Button(text='Löschen')
         clear_button.bind(on_release=self.clear_canvas)
@@ -291,9 +318,10 @@ class SeePainPage(BasePage):
         bottom_nested_layout.add_widget(btn_back)
 
         # Set the size_hint for the nested layouts before adding them
-        top_nested_layout.size_hint = (1, 0.7)
+        top_nested_layout.size_hint = (1, 0.65)
         middle1_nested_layout.size_hint = (1, 0.05)
         middle2_nested_layout.size_hint = (1, 0.05)
+        middle3_nested_layout.size_hint = (1, 0.05)
         middle_nested_layout.size_hint = (1, 0.1)
         bottom_nested_layout.size_hint = (1, 0.1)
 
@@ -301,6 +329,7 @@ class SeePainPage(BasePage):
         main_layout.add_widget(top_nested_layout)
         main_layout.add_widget(middle1_nested_layout)
         main_layout.add_widget(middle2_nested_layout)
+        main_layout.add_widget(middle3_nested_layout)
         main_layout.add_widget(middle_nested_layout)
         main_layout.add_widget(bottom_nested_layout)
 
@@ -333,21 +362,42 @@ class SeePainPage(BasePage):
     def set_zoom_color(self, value):
         """Update the pencil color and slider track color based on the pain slider value."""
         color_values = [
-            (1, 1, 0, 1),   # yellow
-            (1, 0.9, 0, 1),
-            (1, 0.8, 0, 1),
-            (1, 0.7, 0, 1),
-            (1, 0.6, 0, 1),
-            (1, 0.5, 0, 1),
-            (1, 0.4, 0, 1),
-            (1, 0.3, 0, 1),
-            (1, 0.2, 0, 1),
-            (1, 0, 0, 1),   # red
+            (0, 1, 0, 1),  # green
+            (0, 0.9, 0.1, 1),
+            (0, 0.8, 0.2, 1),
+            (0, 0.7, 0.3, 1),
+            (0, 0.6, 0.4, 1),
+            (0, 0.5, 0.5, 1),  # green-blue blend
+            (0, 0.4, 0.6, 1),
+            (0, 0.3, 0.7, 1),
+            (0, 0.2, 0.8, 1),
+            (0, 0, 1, 1)  # blue
         ]
         # Calculate the index for the color based on the slider value
         index = int(value) - 1
         self.paint_widget.set_zoom(value)
         self.zoom_slider.value_track_color = color_values[index]
+
+    def set_pencil_thickness(self, value):
+        """Update the pencil color and slider track color based on the pain slider value."""
+        # Define grayscale colors from light gray to dark black
+        color_values = [
+            (0.85, 0.85, 0.85, 1),  # light gray
+            (0.8, 0.8, 0.8, 1),
+            (0.7, 0.7, 0.7, 1),
+            (0.6, 0.6, 0.6, 1),
+            (0.5, 0.5, 0.5, 1),
+            (0.4, 0.4, 0.4, 1),
+            (0.3, 0.3, 0.3, 1),
+            (0.2, 0.2, 0.2, 1),
+            (0.1, 0.1, 0.1, 1),
+            (0, 0, 0, 1)  # black
+        ]
+
+        # Calculate the index for the color based on the slider value
+        index = int(value) - 1
+        self.paint_widget.line_width = value
+        self.pencil_slider.value_track_color = color_values[index]
 
     def clear_canvas(self, instance):
         self.paint_widget.clear_canvas()
@@ -407,32 +457,3 @@ class SeePainPage(BasePage):
                 print(f"Error saving image: {str(e)}")
         else:
             print("No file name provided.")
-
-    def show_pencil_popup(self, instance):
-        """Show a popup where the user can choose the pencil thickness."""
-        content = BoxLayout(orientation='vertical', spacing=10)
-
-        thickness_slider = Slider(min=1, max=10, value=self.paint_widget.line_width, orientation='horizontal')
-        thickness_label = Label(text=f'Dicke: {int(thickness_slider.value)}')
-
-        # Bind the slider's value to update the label in real-time
-        thickness_slider.bind(
-            value=lambda s, v: thickness_label.setter('text')(thickness_label, f'Dicke: {int(v)}'))
-
-        # Save button to apply the chosen thickness
-        save_button = Button(text='Anwenden', size_hint_y=None, height=50)
-        save_button.bind(on_press=lambda x: self.apply_pencil_thickness(thickness_slider.value))
-
-        # Add the slider and label to the popup content
-        content.add_widget(thickness_label)
-        content.add_widget(thickness_slider)
-        content.add_widget(save_button)
-
-        # Create and open the popup
-        self.pencil_popup = Popup(title='Bleistiftdicke', content=content, size_hint=(0.8, 0.4))
-        self.pencil_popup.open()
-
-    def apply_pencil_thickness(self, thickness):
-        """Apply the selected pencil thickness."""
-        self.paint_widget.line_width = thickness
-        self.pencil_popup.dismiss()  # Close the popup after applying
