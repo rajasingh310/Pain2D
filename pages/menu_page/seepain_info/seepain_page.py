@@ -13,6 +13,8 @@ from kivy.graphics import Fbo, ClearColor, ClearBuffers
 from ...base_page.base_page import BasePage  # Ensure BasePage is correctly referenced
 import os
 from kivy.uix.textinput import TextInput
+from kivy.app import App
+
 
 # Check if we are running on Android
 try:
@@ -33,6 +35,8 @@ class PaintWidget(Widget):
         self.is_moving = False  # Flag to track whether we are in move mode
         self.move_enabled = False  # To toggle between move and draw mode
         self.last_touch_pos = None  # To track the last position for moving
+
+        self.eraser_enabled = False
 
         # To store lines and their original points for transformation
         self.lines = []
@@ -92,19 +96,39 @@ class PaintWidget(Widget):
             self.is_moving = True
             return True
         else:
-            # Drawing mode
+            # Drawing or erasing mode
             if self.collide_point(*touch.pos):
                 with self.canvas:
                     Color(*self.color)
                     # Normalize the touch positions relative to the image
                     normalized_x = (touch.x - self.rect.pos[0]) / self.rect.size[0]
                     normalized_y = (touch.y - self.rect.pos[1]) / self.rect.size[1]
-                    touch.ud['line'] = Line(points=(touch.x, touch.y), width=self.line_width)
-                    # Store original normalized points
-                    self.lines.append({
-                        'line': touch.ud['line'],
-                        'original_points': [normalized_x, normalized_y]
-                    })
+
+                    if self.eraser_enabled:
+                        # Eraser functionality
+                        for line in self.lines:
+                            # Check each segment of the line for proximity to the touch position
+                            for i in range(0, len(line['original_points']), 2):
+                                if abs(round(normalized_x, 3) - round(line['original_points'][i], 3)) < 0.02 and \
+                                        abs(round(normalized_y, 3) - round(line['original_points'][i + 1], 3)) < 0.02:
+                                    print("Erasing point:", line['original_points'][i], line['original_points'][i + 1])
+                                    # Remove the point from the original points
+                                    line['original_points'].pop(i)
+                                    line['original_points'].pop(i)  # Remove corresponding y-coordinate
+                                    self.canvas.remove(line['line'])  # Optionally, remove the line from the canvas
+                                    self.lines.remove(line)  # Remove line entry
+                                    break  # Exit the loop once a point is erased
+
+                    else:
+                        # Drawing mode
+                        touch.ud['line'] = Line(points=(touch.x, touch.y), width=self.line_width)
+                        # Store original normalized points
+                        self.lines.append({
+                            'line': touch.ud['line'],
+                            'original_points': [normalized_x, normalized_y]
+                        })
+                        print("Drawn point")
+
                 # Clear the redo stack when drawing a new line
                 self.redo_stack.clear()
                 return True
@@ -153,6 +177,10 @@ class PaintWidget(Widget):
     def toggle_move_mode(self):
         """Method to toggle between move and draw modes"""
         self.move_enabled = not self.move_enabled
+
+    def toggle_eraser_mode(self):
+        """Method to toggle between move and draw modes"""
+        self.eraser_enabled = not self.eraser_enabled
 
     def undo(self):
         if self.lines:
@@ -283,15 +311,19 @@ class SeePainPage(BasePage):
         # Middle nested layout
         middle_nested_layout = BoxLayout(orientation="horizontal")
 
-        clear_button = Button(text='Löschen')
+        self.eraser_button = Button(text='Radiergummi')
+        self.eraser_button.bind(on_release=self.toggle_eraser_mode)
+        middle_nested_layout.add_widget(self.eraser_button)
+
+        clear_button = Button(text='   Alles\nLöschen')
         clear_button.bind(on_release=self.clear_canvas)
         middle_nested_layout.add_widget(clear_button)
 
-        undo_button = Button(text="Undo")
+        undo_button = Button(text="Rückgängig")
         undo_button.bind(on_release=lambda instance: self.paint_widget.undo())
         middle_nested_layout.add_widget(undo_button)
 
-        redo_button = Button(text="Redo")
+        redo_button = Button(text="Wiederherstellen")
         redo_button.bind(on_release=lambda instance: self.paint_widget.redo())
         middle_nested_layout.add_widget(redo_button)
 
@@ -328,8 +360,8 @@ class SeePainPage(BasePage):
         # Add nested layouts to the main layout
         main_layout.add_widget(top_nested_layout)
         main_layout.add_widget(middle1_nested_layout)
-        main_layout.add_widget(middle2_nested_layout)
         main_layout.add_widget(middle3_nested_layout)
+        main_layout.add_widget(middle2_nested_layout)
         main_layout.add_widget(middle_nested_layout)
         main_layout.add_widget(bottom_nested_layout)
 
@@ -420,17 +452,25 @@ class SeePainPage(BasePage):
         else:
             self.toggle_move_button.background_color = (1, 1, 1, 1)  # White for draw mode
 
+    def toggle_eraser_mode(self, instance):
+        """Toggle eraser/draw mode and change the button color"""
+        self.paint_widget.toggle_eraser_mode()
+        if self.paint_widget.eraser_enabled:
+            self.eraser_button.background_color = (0, 0, 1, 1)  # Blue for eraser mode
+        else:
+            self.eraser_button.background_color = (1, 1, 1, 1)  # White for draw mode
+
     def show_save_popup(self, instance):
         content = BoxLayout(orientation='vertical', spacing=10)
 
-        self.file_name_input = TextInput(hint_text='Enter file name')
+        self.file_name_input = TextInput(hint_text='"Geben Sie Ihr Pseudonym ein.')
         content.add_widget(self.file_name_input)
 
-        save_button = Button(text='Save', size_hint_y=None, height=50)
+        save_button = Button(text='Speichern', size_hint_y=None, height=50)
         save_button.bind(on_press=self.save_canvas_with_name)
         content.add_widget(save_button)
 
-        self.save_popup = Popup(title='Save Image', content=content, size_hint=(0.8, 0.4))
+        self.save_popup = Popup(title='Bild Speichern', content=content, size_hint=(0.8, 0.4))
         self.save_popup.open()
 
     def save_canvas_with_name(self, instance):
@@ -451,9 +491,28 @@ class SeePainPage(BasePage):
                 self.paint_widget.save_canvas(save_path)
                 print(f"Image saved successfully at: {save_path}")
 
+                # Show success message in German
+                self.show_success_popup("Bild erfolgreich gespeichert!", "Schließen")
+
                 # Close the popup
                 self.save_popup.dismiss()
             except Exception as e:
                 print(f"Error saving image: {str(e)}")
         else:
             print("No file name provided.")
+
+    def show_success_popup(self, message, button_text):
+        content = BoxLayout(orientation='vertical')
+        label = Label(text=message)
+        close_button = Button(text=button_text)
+
+        close_button.bind(on_release=self.close_app)  # Bind close button to close_app method
+
+        content.add_widget(label)
+        content.add_widget(close_button)
+
+        success_popup = Popup(title='Erfolg', content=content, size_hint=(0.8, 0.4))
+        success_popup.open()
+
+    def close_app(self, instance):
+        App.get_running_app().stop()  # Stop the app

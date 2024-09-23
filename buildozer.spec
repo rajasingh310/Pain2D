@@ -4,10 +4,10 @@
 title = SeePain
 
 # (str) Package name
-package.name = SeePain
+package.name = seepain
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.SeePain
+package.domain = org.seepain
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -37,10 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy, pillow, android
-
-android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
-
+requirements = python3,kivy
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -50,10 +47,7 @@ android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
 #presplash.filename = %(source.dir)s/data/presplash.png
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
-
 icon.filename = seepain_logo.png
-
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
 orientation = portrait

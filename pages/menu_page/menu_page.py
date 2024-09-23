@@ -25,7 +25,7 @@ class MenuPage(BasePage):
         image_widget = KivyImage()
         image_widget.texture = self.bg_image
         image_widget.size_hint_y = 0.9  # 20% of the screen height
-        top1_nested_layout.add_widget(Label(text="Wie man Pain Drawings richtig ausfüllt!", color=(0, 0, 0, 1)))
+        top1_nested_layout.add_widget(Label(text="Wie man Pain Drawings richtig ausfüllt!", font_size ="35sp",  color=(0, 0, 0, 1)))
         top2_nested_layout.add_widget(image_widget)
 
         top1_nested_layout.size_hint = (1, 0.1)
