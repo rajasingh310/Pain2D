@@ -463,7 +463,7 @@ class SeePainPage(BasePage):
     def show_save_popup(self, instance):
         content = BoxLayout(orientation='vertical', spacing=10)
 
-        self.file_name_input = TextInput(hint_text='"Geben Sie Ihr Pseudonym ein.')
+        self.file_name_input = TextInput(hint_text='Geben Sie Ihr Pseudonym ein.')
         content.add_widget(self.file_name_input)
 
         save_button = Button(text='Speichern', size_hint_y=None, height=50)

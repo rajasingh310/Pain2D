@@ -20,11 +20,12 @@ class MenuPage(BasePage):
 
         # List of image paths and corresponding texts
         image_text_data = [
-            {'image': 'pages/menu_page/pen_tablet.png', 'text': "1/5 \nNutzen Sie den beim Tablett liegenden Stift zum Zeichnen."},
-            {'image': 'pages/menu_page/pen_thickness.png', 'text': "2/5 \nSie können die Bleistiftdicke mit dem Regler nach Wunsch anpassen."},
-            {'image': 'pages/menu_page/pain_value.png', 'text': "3/5 \nSie können verschiedene Schmerzintensitäten angeben."},
-            {'image': 'pages/menu_page/info.png', 'text': "4/5 \nWie man Pain Drawings richtig ausfüllt!"},
-            {'text': "5/5 \nWenn Sie fertig sind, drücken Sie auf Einreichen und geben Ihr Pseudonym ein. \n\nFalls sie dies nicht wissen, geben sie Name und Geburtsdatum an. \n\nAnschließend füllen Sie den Fragebogen aus."}  # Slide with only text
+            {'image': 'pages/menu_page/pen_tablet.png', 'text': "1/6 \nNutzen Sie den beim Tablett liegenden Stift zum Zeichnen."},
+            {'image': 'pages/menu_page/pen_thickness.png', 'text': "2/6 \nSie können die Bleistiftdicke mit dem Regler nach Wunsch anpassen."},
+            {'image': 'pages/menu_page/pain_value.png', 'text': "3/6 \nSie können verschiedene Schmerzintensitäten angeben."},
+            {'image': 'pages/menu_page/info.png', 'text': "4/6 \nWie man Pain Drawings richtig ausfüllt!"},
+            {'text': "5/6 \nWenn Sie fertig sind, drücken Sie auf Einreichen und geben Ihr Pseudonym ein. \n\nFalls sie dies nicht wissen, geben sie Name und Geburtsdatum an. \n\nAnschließend füllen Sie den Fragebogen aus."},  # Slide with only text
+            {'text': "6/6 \nZeichnen Sie nun Ihren durchschnittlichen Schmerz der letzten Woche in die Person ein."}
         ]
 
         for item in image_text_data:
