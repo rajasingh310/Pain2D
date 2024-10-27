@@ -44,7 +44,7 @@ class DrawWidget(Scatter):
         self.redo_color_stack = []
         self.undo_color_stack = []
         self.eraser_indicator = None  # To store the reference to the eraser indicator
-        self.eraser_size = 50  # Diameter of the eraser indicator circle
+        self.eraser_size = 70  # Diameter of the eraser indicator circle
 
         # Add a white background
         with self.canvas.before:
@@ -92,8 +92,8 @@ class DrawWidget(Scatter):
                         for line in self.lines:
                             # Check each segment of the line for proximity to the touch position
                             for i in range(0, len(line['original_points']), 2):
-                                if abs(local_x - line['original_points'][i]) < 20 and \
-                                        abs(local_y - line['original_points'][i + 1]) < 20:  # Adjust threshold as needed
+                                if abs(local_x - line['original_points'][i]) < 40 and \
+                                        abs(local_y - line['original_points'][i + 1]) < 40:  # Adjust threshold as needed
 
                                     # Remove the point from the original points
                                     line['original_points'].pop(i)  # Remove corresponding x-coordinate
