@@ -137,7 +137,7 @@ class MenuPage(BasePage):
             self.go_to_seepain_page(instance)
         else:
             # Create a popup indicating the user needs to complete the swipe
-            popup = Popup(title='Unvollständiger Wischvorgang', content=Label(text='Bitte vervollständigen Sie den Wischvorgang.'),
+            popup = Popup(title='Unvollständiges Lesen', content=Label(text='Bitte lesen Sie alle Anweisungen, indem Sie durch die Seiten wischen.'),
                           size_hint=(0.6, 0.4))
             popup.open()
 

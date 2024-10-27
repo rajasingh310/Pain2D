@@ -12,6 +12,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 import os
 from kivy.uix.screenmanager import Screen
+from kivy.clock import Clock
 
 # Check if we are running on Android
 try:
@@ -43,7 +44,7 @@ class DrawWidget(Scatter):
         self.redo_color_stack = []
         self.undo_color_stack = []
         self.eraser_indicator = None  # To store the reference to the eraser indicator
-        self.eraser_size = 30  # Diameter of the eraser indicator circle
+        self.eraser_size = 50  # Diameter of the eraser indicator circle
 
         # Add a white background
         with self.canvas.before:
@@ -152,6 +153,10 @@ class DrawWidget(Scatter):
             self.undo_stack.append(last_line)
             self.canvas.remove(last_line['line'])
 
+            last_color = self.colors.pop()
+            self.undo_color_stack.append(last_color)
+
+
     def undo(self):
         if self.lines:
             last_line = self.lines.pop()
@@ -176,7 +181,14 @@ class DrawWidget(Scatter):
                 self.canvas.add(last_undone_line['line'])
 
     def save_canvas(self, file_path):
-        self.export_to_png(file_path)
+        # Reset the scale and position to default
+        self.scale = 1.0
+        self.pos = (0, 0)  # or adjust as necessary based on your layout
+
+        # Force a layout update
+        self.canvas.ask_update()  # Update the canvas
+        Clock.schedule_once(lambda dt: self.export_to_png(file_path), 0.1)
+
 
 
 # 2. Toggle Button Class
