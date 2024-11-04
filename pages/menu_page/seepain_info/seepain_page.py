@@ -52,7 +52,7 @@ class DrawWidget(Scatter):
             self.rect = Rectangle(size=self.size, pos=self.pos)
 
         # Load the background image with correct properties
-        self.background_image = Image(source='pages/menu_page/seepain_info/new_template_human_sketch.png',
+        self.background_image = Image(source='pages/menu_page/seepain_info/seepain_human_template.png',
                                       allow_stretch=True,
                                       keep_ratio=True)
         self.background_image.size_hint_y = None

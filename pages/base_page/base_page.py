@@ -41,7 +41,7 @@ class FirstPage(BasePage):
         layout.add_widget(label_heading)
 
         # Add a label for the German description, occupying the remaining space
-        label_description = Label(text="Willkommen bei der SeePain-App. \nHier können Sie Ihren Schmerz auf einem Körper visualisieren.", halign="center", valign="middle", size_hint_y=0.4, color=(0, 0, 0, 1))
+        label_description = Label(text="Willkommen bei der SeePain-App. \nHier können Sie Ihren Schmerz auf einem Körper visualisieren.", font_size='18sp', halign="center", valign="middle", size_hint_y=0.4, color=(0, 0, 0, 1))
         layout.add_widget(label_description)
 
         # Add the ENTER button, occupying bottom 20% of the screen
