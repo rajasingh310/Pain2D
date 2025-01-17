@@ -34,7 +34,7 @@ class DrawWidget(Scatter):
         self.do_scale = False
         self.do_translation = False
         self.do_rotation = False
-        self.line_width = 2
+        self.line_width = 10
         self.color = (1, 0, 0, 1)
         self.lines = []
         self.colors = []
@@ -245,7 +245,7 @@ class MainLayout(BoxLayout):
         # Introduce sliders
 
         # slider for pencil level
-        self.pencil_slider = Slider(min=1, max=10, value=2, orientation='horizontal', value_track=True,
+        self.pencil_slider = Slider(min=1, max=10, value=10, orientation='horizontal', value_track=True,
                                     value_track_color=[0.8, 0.8, 0.8, 1])
 
         self.pencil_value_label = Label(text=str(int(self.pencil_slider.value)), color=(0, 0, 0, 1))

@@ -1,6 +1,11 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 
+#from kivy.config import Config
+#Config.set('graphics', 'width', '480')  # Set the width
+#Config.set('graphics', 'height', '800')  # Set the height
+#Config.set('graphics', 'resizable', False)  # Optional: Make the window non-resizable
+
 from pages.base_page.base_page import FirstPage
 from pages.menu_page.menu_page import MenuPage
 #from pages.menu_page.patient_info.patient_page import PatientPage

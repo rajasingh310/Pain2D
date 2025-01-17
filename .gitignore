@@ -1,0 +1,7 @@
+*.png
+*.jpg
+*seepian_data/
+*.cpython
+*.pyc
+.idea
+.DS_Store
